@@ -1,0 +1,27 @@
+@model TaskManagerWeb.Models.TaskItem
+
+@{
+    ViewData["Title"] = "Criar Tarefa";
+}
+
+<h2>Criar nova tarefa</h2>
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label asp-for="Description" class="control-label">Descrição</label>
+        <input asp-for="Description" class="form-control" />
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="form-group form-check mt-2">
+        <input asp-for="IsCompleted" class="form-check-input" />
+        <label asp-for="IsCompleted" class="form-check-label">Já está concluída?</label>
+    </div>
+
+    <button type="submit" class="btn btn-primary mt-3">Salvar</button>
+    <a asp-action="Index" class="btn btn-secondary mt-3">Voltar</a>
+</form>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}
