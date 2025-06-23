@@ -1,0 +1,31 @@
+# Diretórios de build e temporários
+bin/
+obj/
+*.user
+*.vspscc
+*.vssscc
+
+# Arquivos de log e temporários
+*.log
+
+# Banco de dados local (SQLite)
+*.db
+*.db-shm
+*.db-wal
+
+# Arquivos do Rider / VSCode / Visual Studio
+.vscode/
+.idea/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Arquivos de publish temporário
+.publish/
+
+# Configurações de build locais
+*.DotSettings.user
+
+# Backup de migrations (por segurança, manter apenas Migrations/)
+Migrations/Backup*/ 
