@@ -30,7 +30,7 @@ Sistema web simples para gerenciamento de tarefas, desenvolvido com ASP.NET Core
 1. Clone o repositório:
 
 ```bash
-git clone https://github.com/seu-usuario/TaskManagerWeb.git
+git clone https://github.com/gustavodacostap/TaskManagerWeb.git
 cd TaskManagerWeb
 ```
 
