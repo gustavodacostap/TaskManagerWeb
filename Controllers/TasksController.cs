@@ -21,17 +21,19 @@ public class TasksController : Controller
 
     // GET: Exibe o formulário para criar nova tarefa
     public IActionResult Create()
-    {   
+    {
         return View();
     }
 
     // POST: Recebe os dados do formulário e cria a tarefa
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult Create(TaskItem task)
     {
         if (ModelState.IsValid)
         {
-            // Salvar no banco
+            _context.Tasks.Add(task);
+            _context.SaveChanges();
             return RedirectToAction("Index");
         }
         return View(task);
@@ -41,16 +43,24 @@ public class TasksController : Controller
     public IActionResult Edit(int id)
     {
         // Buscar tarefa por id e passar para a View
-        return View();
+        var task = _context.Tasks.Find(id);
+
+        if (task == null)
+        {
+            return NotFound();
+        }
+        return View(task);
     }
 
     // POST: Recebe os dados do formulário e atualiza a tarefa
     [HttpPost]
+    [ValidateAntiForgeryToken]
     public IActionResult Edit(TaskItem task)
     {
         if (ModelState.IsValid)
         {
-            // Atualizar no banco
+            _context.Tasks.Update(task);
+            _context.SaveChanges();
             return RedirectToAction("Index");
         }
         return View(task);
@@ -59,15 +69,44 @@ public class TasksController : Controller
     // GET: Confirma exclusão da tarefa
     public IActionResult Delete(int id)
     {
-        // Buscar tarefa por id para confirmar
-        return View();
+        var task = _context.Tasks.Find(id);
+
+        if (task == null)
+        {
+            return NotFound();
+        }
+        return View(task);
     }
 
     // POST: Executa exclusão da tarefa
     [HttpPost, ActionName("Delete")]
     public IActionResult DeleteConfirmed(int id)
     {
-        // Remover do banco
+        var task = _context.Tasks.Find(id);
+        if (task == null)
+        {
+            return NotFound();
+        }
+
+        _context.Tasks.Remove(task);
+        _context.SaveChanges();
+
+        return RedirectToAction("Index");
+    }
+
+    // POST: Marca a tarefa como concluída
+    [HttpPost]
+    public IActionResult ToggleComplete(int id)
+    {
+        var task = _context.Tasks.Find(id);
+        if (task == null)
+        {
+            return NotFound();
+        }
+
+        task.IsCompleted = !task.IsCompleted;
+        _context.SaveChanges();
+
         return RedirectToAction("Index");
     }
 }

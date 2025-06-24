@@ -1,0 +1,35 @@
+@model TaskItem;
+
+@{
+    ViewData["Title"] = "Excluir Tarefa";
+}
+
+<a asp-action="Index" class="text-dark d-inline-block">
+    <svg xmlns="http://www.w3.org/2000/svg" width="25" height="25" fill="currentColor" class="bi bi-arrow-left"
+        viewBox="0 0 16 16">
+        <path fill-rule="evenodd"
+            d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8" />
+    </svg>
+</a>
+
+<h2 class="display-6 fw-normal my-3">Excluir Tarefa</h2>
+
+<div class="alert alert-danger">
+    <p>Você tem certeza que deseja excluir a seguinte tarefa?</p>
+</div>
+
+<div class="mb-3">
+    <strong>ID:</strong> @Model.Id
+</div>
+<div class="mb-3">
+    <strong>Descrição:</strong> @Model.Description
+</div>
+<div class="mb-3">
+    <strong>Status:</strong> @(Model.IsCompleted ? "Concluída" : "Pendente")
+</div>
+
+<form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="Id" />
+    <button type="submit" class="btn btn-danger">Confirmar Exclusão</button>
+    <a asp-action="Index" class="btn btn-secondary">Cancelar</a>
+</form>
