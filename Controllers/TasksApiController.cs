@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 using TaskManagerWeb.Models;
 using TaskManagerWeb.Data;
+using System.Text.Json;
 
 namespace TaskManagerWeb.Controllers;
 
@@ -52,7 +53,7 @@ public class TasksApiController : ControllerBase
 
     // PUT /api/tasks/{id}
     [HttpPut("{id}")]
-    public IActionResult UpdateTask(int id, TaskItem task)
+    public IActionResult UpdateTask(int id, [FromBody] TaskItem task)
     {
         var existing = _context.Tasks.Find(id);
         if (existing == null)
@@ -62,6 +63,21 @@ public class TasksApiController : ControllerBase
         existing.IsCompleted = task.IsCompleted;
 
         _context.SaveChanges();
+
+        return Ok(existing);
+    }
+
+    [HttpPatch("{id}")]
+    public IActionResult UpdateTaskStatus(int id, [FromBody] JsonElement data)
+    {
+        var task = _context.Tasks.Find(id);
+        if (task == null) return NotFound();
+
+        if (data.TryGetProperty("isCompleted", out var isCompleted))
+        {
+            task.IsCompleted = isCompleted.GetBoolean();
+            _context.SaveChanges();
+        }
 
         return NoContent();
     }

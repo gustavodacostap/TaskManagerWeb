@@ -13,3 +13,11 @@ html {
 span:empty {
   display: none;
 }
+
+.task-hover:hover .task-actions {
+    display: flex !important;
+}
+
+.task-list li:not(:last-child) {
+    border-bottom: 1px solid #dee2e6;
+}

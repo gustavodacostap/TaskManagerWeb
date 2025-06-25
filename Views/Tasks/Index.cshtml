@@ -1,80 +1,39 @@
-﻿@model List<TaskItem>
-@{
+﻿@{
     ViewData["Title"] = "Tarefas";
 }
 
 <div class="container mt-4">
     <h1 class="mb-4 text-center">Lista de Tarefas</h1>
 
-    <div class="mb-3 text-end">
-        <a class="btn btn-primary" asp-action="Create">+ Adicionar Nova Tarefa</a>
+    <div id="tasks-container" class="mt-4">
+        <!-- As tarefas serão carregadas aqui dinamicamente -->
     </div>
 
-    @if (!Model.Any())
-    {
-        <div class="alert alert-info text-center" role="alert">
-            Nenhuma tarefa cadastrada ainda.
-        </div>
-    }
-    else
-    {
-        <table class="table table-striped table-hover align-middle">
-            <thead class="table-primary">
-                <tr>
-                    <th>ID</th>
-                    <th>Descrição</th>
-                    <th>Status</th>
-                    <th class="text-center">Ações</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var task in Model)
-                {
-                    <tr>
-                        <td>@task.Id</td>
-                        <td>@task.Description</td>
-                        <td>
-                            @if (task.IsCompleted)
-                            {
-                                <span class="badge bg-success">Concluída</span>
-                            }
-                            else
-                            {
-                                <span class="badge bg-warning text-dark">Pendente</span>
-                            }
-                        </td>
-                        <td class="d-flex justify-content-center gap-2">
-                            <form asp-action="ToggleComplete" asp-route-id="@task.Id" method="post" class="d-inline">
-                                <button type="submit" class="btn btn-sm d-flex align-items-center justify-content-center
-                                                    @(task.IsCompleted ? "btn-secondary" : "btn-success")"
-                                    title="@(task.IsCompleted ? "Marcar como pendente" : "Marcar como concluída")">
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
-                                        class="bi bi-check-lg" viewBox="0 0 16 16">
-                                        <path
-                                            d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425z" />
-                                    </svg>
-                                </button>
-                            </form>
-                            <a asp-action="Edit" asp-route-id="@task.Id"
-                                class="btn btn-sm btn-primary d-flex align-items-center justify-content-center" title="Editar">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="currentColor"
-                                    class="bi bi-pen-fill" viewBox="0 0 16 16">
-                                    <path
-                                        d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001" />
-                                </svg>
-                            </a>
-                            <a asp-action="Delete" asp-route-id="@task.Id"
-                                class="btn btn-sm btn-danger d-flex align-items-center justify-content-center" title="Excluir">
-                                <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="currentColor"
-                                    class="bi bi-trash3-fill" viewBox="0 0 16 16">
-                                    <path
-                                        d="M11 1.5v1h3.5a.5.5 0 0 1 0 1h-.538l-.853 10.66A2 2 0 0 1 11.115 16h-6.23a2 2 0 0 1-1.994-1.84L2.038 3.5H1.5a.5.5 0 0 1 0-1H5v-1A1.5 1.5 0 0 1 6.5 0h3A1.5 1.5 0 0 1 11 1.5m-5 0v1h4v-1a.5.5 0 0 0-.5-.5h-3a.5.5 0 0 0-.5.5M4.5 5.029l.5 8.5a.5.5 0 1 0 .998-.06l-.5-8.5a.5.5 0 1 0-.998.06m6.53-.528a.5.5 0 0 0-.528.47l-.5 8.5a.5.5 0 0 0 .998.058l.5-8.5a.5.5 0 0 0-.47-.528M8 4.5a.5.5 0 0 0-.5.5v8.5a.5.5 0 0 0 1 0V5a.5.5 0 0 0-.5-.5" />
-                                </svg>
-                            </a>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    }
+    <div id="add-task-container" class="mt-4 text-end">
+        <button id="btn-show-form" class="btn btn-primary">+ Nova Tarefa</button>
+    </div>
+
 </div>
+
+<div class="modal fade" id="confirmDeleteModal" tabindex="-1" aria-labelledby="confirmDeleteLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="confirmDeleteLabel">Excluir tarefa?</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+            </div>
+            <div class="modal-body" id="confirmDeleteBody">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                <button type="button" class="btn btn-danger" id="btnConfirmDelete">Excluir</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/js/tasks.js" asp-append-version="true"></script>
+    <script src="~/js/addTask.js" asp-append-version="true"></script>
+    <partial name="_ValidationScriptsPartial" />
+}
