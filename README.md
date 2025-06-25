@@ -22,40 +22,18 @@ Sistema web simples para gerenciamento de tarefas, desenvolvido com ASP.NET Core
 
 ### Pré-requisitos
 
-- [.NET SDK 8+](https://dotnet.microsoft.com/download)
+- [.NET SDK 9+](https://dotnet.microsoft.com/download)
 - Editor de código como [Visual Studio Code](https://code.visualstudio.com/) ou [Visual Studio]
 
-### Passos
-
-1. Clone o repositório:
+### Comandos
 
 ```bash
 git clone https://github.com/gustavodacostap/TaskManagerWeb.git
 cd TaskManagerWeb
-```
-
-2. Restaure os pacotes:
-
-```bash
 dotnet restore
-```
-
-3. (Se for a primeira vez) Crie o banco de dados:
-
-```bash
+dotnet tool install --global dotnet-ef
 dotnet ef database update
-```
-
-4. Execute o projeto:
-
-```bash
 dotnet run
-```
-
-5. Acesse no navegador:
-
-```bash
-http://localhost:xxxx
 ```
 
 ## 🧠 Sobre o Projeto
