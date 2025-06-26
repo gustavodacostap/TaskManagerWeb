@@ -3,28 +3,36 @@
 let taskToDelete = null;
 
 function loadTasks() {
-    fetch("/api/tasks")
-        .then(res => { if (!res.ok) throw new Error("Erro ao buscar tarefas"); return res.json(); })
-        .then(tasks => renderTasks(tasks))
-        .catch(err => {
-            console.error(err);
-            document.getElementById("tasks-container").innerHTML = `<div class="alert alert-danger">Erro ao carregar tarefas.</div>`;
-        });
+  fetch("/api/tasks")
+    .then((res) => {
+      if (!res.ok) throw new Error("Erro ao buscar tarefas");
+      return res.json();
+    })
+    .then((tasks) => renderTasks(tasks))
+    .catch((err) => {
+      console.error(err);
+      document.getElementById(
+        "tasks-container"
+      ).innerHTML = `<div class="alert alert-danger">Erro ao carregar tarefas.</div>`;
+    });
 }
 
 function renderTaskItem(task) {
-    const li = document.createElement("li");
-    li.className = "task-item p-2 d-flex align-items-center justify-content-between position-relative task-hover";
-    li.dataset.taskId = task.id;
+  const li = document.createElement("li");
+  li.className =
+    "task-item p-2 d-flex align-items-center justify-content-between position-relative";
+  li.dataset.taskId = task.id;
 
-    li.innerHTML = `
+  li.innerHTML = `
     <div class="form-check d-flex align-items-center gap-2" style="min-height: 38px;">
       <input class="form-check-input mt-0 rounded-circle" type="checkbox"
         id="task-${task.id}" ${task.isCompleted ? "checked" : ""}>
-      <label class="form-check-label ${task.isCompleted ? "text-decoration-line-through" : ""}"
+      <label class="form-check-label ${
+        task.isCompleted ? "text-decoration-line-through" : ""
+      }"
         for="task-${task.id}">${task.description}</label>
     </div>
-    <div class="task-actions d-none d-md-flex gap-2 position-absolute end-0 me-3">
+    <div class="d-none d-md-flex gap-2 position-absolute end-0 me-3">
       <button class="btn btn-sm btn-outline-primary btn-edit" title="Editar">
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-pen-fill" viewBox="0 0 16 16">
             <path d="m13.498.795.149-.149a1.207 1.207 0 1 1 1.707 1.708l-.149.148a1.5 1.5 0 0 1-.059 2.059L4.854 14.854a.5.5 0 0 1-.233.131l-4 1a.5.5 0 0 1-.606-.606l1-4a.5.5 0 0 1 .131-.232l9.642-9.642a.5.5 0 0 0-.642.056L6.854 4.854a.5.5 0 1 1-.708-.708L9.44.854A1.5 1.5 0 0 1 11.5.796a1.5 1.5 0 0 1 1.998-.001"/>
@@ -38,42 +46,45 @@ function renderTaskItem(task) {
     </div>
   `;
 
-    li.querySelector(".btn-edit").addEventListener("click", () => enterEditMode(li, task));
-    setupDeleteButton(li, task);
-    li.querySelector("input[type='checkbox']").addEventListener("change", (e) => {
-        const checked = e.target.checked;
+  li.querySelector(".btn-edit").addEventListener("click", () =>
+    enterEditMode(li, task)
+  );
+  setupDeleteButton(li, task);
+  li.querySelector("input[type='checkbox']").addEventListener("change", (e) => {
+    const checked = e.target.checked;
 
-        li.querySelector("label").classList.toggle("text-decoration-line-through", checked);
+    li.querySelector("label").classList.toggle(
+      "text-decoration-line-through",
+      checked
+    );
 
-
-        toggleTaskCompletion(task.id, checked);
-    });
-    return li;
+    toggleTaskCompletion(task.id, checked);
+  });
+  return li;
 }
 
 function renderTasks(tasks) {
-    const container = document.getElementById("tasks-container");
-    container.innerHTML = "";
+  const container = document.getElementById("tasks-container");
+  container.innerHTML = "";
 
-    if (tasks.length === 0) {
-        container.innerHTML = `<div class="alert alert-info text-center">Nenhuma tarefa cadastrada.</div>`;
-        return;
-    }
+  if (tasks.length === 0) {
+    container.innerHTML = `<div class="alert alert-info text-center">Nenhuma tarefa cadastrada.</div>`;
+    return;
+  }
 
-    const ul = document.createElement("ul");
-    ul.id = "task-list";
-    ul.className = "list-unstyled task-list";
+  const ul = document.createElement("ul");
+  ul.id = "task-list";
+  ul.className = "list-unstyled task-list";
 
-    tasks.forEach(task => ul.appendChild(renderTaskItem(task)));
-    container.appendChild(ul);
+  tasks.forEach((task) => ul.appendChild(renderTaskItem(task)));
+  container.appendChild(ul);
 }
 
-
 function enterEditMode(li, task) {
-    li.innerHTML = `
+  li.innerHTML = `
     <div class="card p-3 w-100" id="edit-form">
     <input type="text" class="form-control mb-3 edit-input" value="${task.description}" placeholder="Descrição da tarefa" />
-    <span asp-validation-for="Description" class="text-danger d-block mb-2"></span>
+    <span class="text-danger field-validation-valid" data-valmsg-for="Description" data-valmsg-replace="true"></span>
     <div class="d-flex justify-content-end gap-2">
         <button class="btn btn-secondary btn-cancel-edit">Cancelar</button>
         <button class="btn btn-primary btn-save-edit">Salvar</button>
@@ -81,75 +92,89 @@ function enterEditMode(li, task) {
     </div>
   `;
 
-    li.querySelector(".btn-cancel-edit").addEventListener("click", () => {
-        const newLi = renderTaskItem(task);
-        li.replaceWith(newLi);
-    });
+  $.validator.unobtrusive.parse("#edit-form");
 
-    li.querySelector(".btn-save-edit").addEventListener("click", () => {
-        const newDesc = li.querySelector(".edit-input").value;
-        fetch(`/api/tasks/${task.id}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                id: task.id,
-                description: newDesc,
-                isCompleted: task.isCompleted
-            })
-        })
-            .then(res => {
-                if (!res.ok) throw new Error("Erro ao atualizar.");
-                return res.json();
-            })
-            .then(updatedTask => {
-                const newLi = renderTaskItem(updatedTask);
-                li.replaceWith(newLi);
-            })
-            .catch(err => console.error(err));
-    });
+  li.querySelector(".btn-cancel-edit").addEventListener("click", () => {
+    const newLi = renderTaskItem(task);
+    li.replaceWith(newLi);
+  });
+
+  li.querySelector(".btn-save-edit").addEventListener("click", () => {
+    const form = document.getElementById("edit-form");
+
+    if (!$(form).valid()) {
+      return;
+    }
+
+    const newDesc = li.querySelector(".edit-input").value;
+
+    fetch(`/api/tasks/${task.id}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        id: task.id,
+        description: newDesc,
+        isCompleted: task.isCompleted,
+      }),
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Erro ao atualizar.");
+        return res.json();
+      })
+      .then((updatedTask) => {
+        const newLi = renderTaskItem(updatedTask);
+        li.replaceWith(newLi);
+      })
+      .catch((err) => console.error(err));
+  });
 }
 
 function setupDeleteButton(li, task) {
-    li.querySelector(".btn-delete").addEventListener("click", () => {
-        taskToDelete = task;
+  li.querySelector(".btn-delete").addEventListener("click", () => {
+    taskToDelete = task;
 
-        document.getElementById("confirmDeleteLabel").textContent = "Excluir tarefa?";
-        document.getElementById("confirmDeleteBody").innerHTML = `
+    document.getElementById("confirmDeleteLabel").textContent =
+      "Excluir tarefa?";
+    document.getElementById("confirmDeleteBody").innerHTML = `
       A tarefa <strong>${task.description}</strong> será permanentemente excluída.
     `;
 
-        const modal = new bootstrap.Modal(document.getElementById("confirmDeleteModal"));
-        modal.show();
-    });
+    const modal = new bootstrap.Modal(
+      document.getElementById("confirmDeleteModal")
+    );
+    modal.show();
+  });
 }
 
 document.getElementById("btnConfirmDelete").addEventListener("click", () => {
-    if (!taskToDelete) return;
+  if (!taskToDelete) return;
 
-    fetch(`/api/tasks/${taskToDelete.id}`, {
-        method: "DELETE",
-        headers: { "Content-Type": "application/json" }
+  fetch(`/api/tasks/${taskToDelete.id}`, {
+    method: "DELETE",
+    headers: { "Content-Type": "application/json" },
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Erro ao excluir tarefa.");
+      const li = document.querySelector(
+        `li[data-task-id="${taskToDelete.id}"]`
+      );
+      if (li) li.remove();
+      taskToDelete = null;
+
+      const modalElement = document.getElementById("confirmDeleteModal");
+      bootstrap.Modal.getInstance(modalElement).hide();
     })
-        .then(res => {
-            if (!res.ok) throw new Error("Erro ao excluir tarefa.");
-            const li = document.querySelector(`li[data-task-id="${taskToDelete.id}"]`);
-            if (li) li.remove();
-            taskToDelete = null;
-
-            const modalElement = document.getElementById("confirmDeleteModal");
-            bootstrap.Modal.getInstance(modalElement).hide();
-        })
-        .catch(err => console.error(err));
+    .catch((err) => console.error(err));
 });
 
 function toggleTaskCompletion(taskId, isCompleted) {
-    fetch(`/api/tasks/${taskId}`, {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ isCompleted })
+  fetch(`/api/tasks/${taskId}`, {
+    method: "PATCH",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ isCompleted }),
+  })
+    .then((res) => {
+      if (!res.ok) throw new Error("Erro ao atualizar tarefa.");
     })
-        .then(res => {
-            if (!res.ok) throw new Error("Erro ao atualizar tarefa.");
-        })
-        .catch(err => console.error(err));
+    .catch((err) => console.error(err));
 }
