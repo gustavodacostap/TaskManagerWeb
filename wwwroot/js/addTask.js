@@ -6,25 +6,37 @@ document.addEventListener("DOMContentLoaded", function () {
         if (!showFormBtn) return;
 
         showFormBtn.addEventListener("click", function () {
+            
             const formHtml = `
-                <div id="task-form" class="card p-3">
-                    <input type="text" id="new-task-desc" class="form-control mb-3" placeholder="Descrição da tarefa" />
-                    <div class="d-flex justify-content-end gap-2">
-                        <button id="btn-cancel" class="btn btn-secondary">Cancelar</button>
-                        <button id="btn-add-task" class="btn btn-primary">Adicionar</button>
+                <form id="create-form" class="w-100">
+                    <div id="task-form" class="card p-3">
+                        <input type="text" id="new-task-desc" name="Description" class="form-control"
+                            placeholder="Descrição da tarefa" data-val="true" data-val-required="A descrição é obrigatória." />
+                        <span class="text-danger field-validation-valid mt-2" data-valmsg-for="Description" data-valmsg-replace="true"></span>
+                        <div class="d-flex justify-content-end gap-2 mt-3">
+                            <button id="btn-cancel" type="button" class="btn btn-secondary">Cancelar</button>
+                            <button id="btn-add-task" type="button" class="btn btn-primary">Adicionar</button>
+                        </div>
                     </div>
-                </div>
+                </form>
             `;
 
             addTaskContainer.innerHTML = formHtml;
+            
+            $.validator.unobtrusive.parse("#create-form");
 
             document.getElementById("btn-cancel").addEventListener("click", function () {
                 restoreAddButton();
             });
 
             document.getElementById("btn-add-task").addEventListener("click", async function () {
-                const description = document.getElementById("new-task-desc").value.trim();
-                if (!description) return;
+                const form = document.getElementById("create-form");
+
+                if (!$(form).valid()) {
+                    return;
+                }
+
+                const description = document.getElementById("new-task-desc").value;
 
                 await fetch("/api/tasks", {
                     method: "POST",

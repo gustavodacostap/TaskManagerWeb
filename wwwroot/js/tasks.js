@@ -27,9 +27,8 @@ function renderTaskItem(task) {
     <div class="form-check d-flex align-items-center gap-2" style="min-height: 38px;">
       <input class="form-check-input mt-0 rounded-circle" type="checkbox"
         id="task-${task.id}" ${task.isCompleted ? "checked" : ""}>
-      <label class="form-check-label ${
-        task.isCompleted ? "text-decoration-line-through" : ""
-      }"
+      <label class="form-check-label ${task.isCompleted ? "text-decoration-line-through" : ""
+    }"
         for="task-${task.id}">${task.description}</label>
     </div>
     <div class="d-none d-md-flex gap-2 position-absolute end-0 me-3">
@@ -82,14 +81,17 @@ function renderTasks(tasks) {
 
 function enterEditMode(li, task) {
   li.innerHTML = `
-    <div class="card p-3 w-100" id="edit-form">
-    <input type="text" class="form-control mb-3 edit-input" value="${task.description}" placeholder="Descrição da tarefa" />
-    <span class="text-danger field-validation-valid" data-valmsg-for="Description" data-valmsg-replace="true"></span>
-    <div class="d-flex justify-content-end gap-2">
-        <button class="btn btn-secondary btn-cancel-edit">Cancelar</button>
-        <button class="btn btn-primary btn-save-edit">Salvar</button>
-    </div>
-    </div>
+    <form id="edit-form" class="w-100">
+      <div class="card p-3">
+        <input type="text" name="Description" class="form-control edit-input"
+          value="${task.description}" placeholder="Descrição da tarefa" data-val="true" data-val-required="A descrição é obrigatória." />
+        <span class="text-danger field-validation-valid mt-2" data-valmsg-for="Description" data-valmsg-replace="true"></span>
+        <div class="d-flex justify-content-end gap-2 mt-3">
+            <button class="btn btn-secondary btn-cancel-edit">Cancelar</button>
+            <button class="btn btn-primary btn-save-edit">Salvar</button>
+        </div>
+      </div>
+    </form>
   `;
 
   $.validator.unobtrusive.parse("#edit-form");
@@ -107,6 +109,13 @@ function enterEditMode(li, task) {
     }
 
     const newDesc = li.querySelector(".edit-input").value;
+
+    // Caso a descrição não tenha mudado, volta ao estado original
+    if (newDesc === task.description.trim()) {
+      const originalLi = renderTaskItem(task);
+      li.replaceWith(originalLi);
+      return;
+    }
 
     fetch(`/api/tasks/${task.id}`, {
       method: "PUT",
