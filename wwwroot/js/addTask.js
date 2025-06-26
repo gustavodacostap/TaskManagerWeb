@@ -1,13 +1,33 @@
-document.addEventListener("DOMContentLoaded", function () {
+import { formState } from "./formState.js";
+import { loadTasks } from "./taskList.js";
+
+// Função principal responsável por configurar o botão "+ Nova Tarefa" e o formulário de criação
+export function initAddTaskForm() {
     const addTaskContainer = document.getElementById("add-task-container");
 
-    function attachShowFormHandler() {
-        const showFormBtn = document.getElementById("btn-show-form");
-        if (!showFormBtn) return;
+    // Função que restaura o botão "+ Nova Tarefa" após cancelar ou adicionar uma tarefa
+    function restoreAddButton() {
+        addTaskContainer.innerHTML = '<button id="btn-show-form" class="btn btn-primary">+ Nova Tarefa</button>';
+        initAddTaskForm();
+        formState.type = null;
+        formState.reset = () => { };
+    }
 
-        showFormBtn.addEventListener("click", function () {
-            
-            const formHtml = `
+    const showFormBtn = document.getElementById("btn-show-form");
+    if (!showFormBtn) return;
+
+    showFormBtn.addEventListener("click", function () {
+        // Se estiver em modo edição, reseta o formulário atual antes de abrir o de criação
+        if (formState.type === "edit" && typeof formState.reset === "function") {
+            formState.reset();
+        }
+
+        // Define que o tipo atual do formulário é "create"
+        formState.type = "create";
+        formState.reset = restoreAddButton;
+
+        // Define o HTML do formulário de criação
+        const formHtml = `
                 <form id="create-form" class="w-100">
                     <div id="task-form" class="card p-3">
                         <input type="text" id="new-task-desc" name="Description" class="form-control"
@@ -21,40 +41,36 @@ document.addEventListener("DOMContentLoaded", function () {
                 </form>
             `;
 
-            addTaskContainer.innerHTML = formHtml;
-            
-            $.validator.unobtrusive.parse("#create-form");
+        // Insere o formulário na interface
+        addTaskContainer.innerHTML = formHtml;
+        // Ativa a validação com jQuery Unobtrusive Validation
+        $.validator.unobtrusive.parse("#create-form");
 
-            document.getElementById("btn-cancel").addEventListener("click", function () {
-                restoreAddButton();
-            });
-
-            document.getElementById("btn-add-task").addEventListener("click", async function () {
-                const form = document.getElementById("create-form");
-
-                if (!$(form).valid()) {
-                    return;
-                }
-
-                const description = document.getElementById("new-task-desc").value;
-
-                await fetch("/api/tasks", {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ description, isCompleted: false })
-                });
-
-                loadTasks();
-
-                restoreAddButton();
-            });
+        // Evento de clique no botão "Cancelar"
+        document.getElementById("btn-cancel").addEventListener("click", function () {
+            restoreAddButton(); // Volta para o botão "+ Nova Tarefa"
         });
-    }
 
-    function restoreAddButton() {
-        addTaskContainer.innerHTML = '<button id="btn-show-form" class="btn btn-primary">+ Nova Tarefa</button>';
-        attachShowFormHandler();
-    }
+        // Evento de clique no botão "Adicionar"
+        document.getElementById("btn-add-task").addEventListener("click", async function () {
+            const form = document.getElementById("create-form");
 
-    attachShowFormHandler();
-});
+            // Se o formulário for inválido, interrompe a execução
+            if (!$(form).valid()) return;
+
+            // Pega o valor do input
+            const description = document.getElementById("new-task-desc").value;
+
+            // Envia a nova tarefa para o backend via API
+            await fetch("/api/tasks", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ description, isCompleted: false })
+            });
+
+            // Recarrega a lista de tarefas e volta para o botão inicial
+            loadTasks();
+            restoreAddButton();
+        });
+    });
+}

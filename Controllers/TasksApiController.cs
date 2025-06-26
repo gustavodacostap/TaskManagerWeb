@@ -67,6 +67,7 @@ public class TasksApiController : ControllerBase
         return Ok(existing);
     }
 
+    // PATCH /api/tasks/{id}
     [HttpPatch("{id}")]
     public IActionResult UpdateTaskStatus(int id, [FromBody] JsonElement data)
     {
